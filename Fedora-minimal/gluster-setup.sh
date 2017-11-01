@@ -26,19 +26,24 @@ export GB_LODGIR
 mkdir -p $GLUSTERFS_LOG_CONT_DIR $GB_LOGDIR
 
 setup() {
-  for i in $GLUSTERFS_CONF_DIR $GLUSTERFS_META_DIR
-  do
-    if ! test "$(ls $i)"
-    then
-          bkp=$i"_bkp"
-          cp -r $bkp/* $i
-          if [ $? -eq 1 ]
-          then
-                echo "Failed to copy $i"
-                exit 1
-          fi
-          ls -R $i > ${GLUSTERFS_LOG_CONT_DIR}/${i//\//_}_ls
+  echo "Initializing state directories..."
+
+  statedirs=( "/var/lib/heketi" "/etc/glusterfs" "/var/lib/glusterd" "/var/lib/misc/glusterfsd" "/etc/target" )
+  for statedir in "${statedirs[@]}"; do
+    statedir_target="/glusterfs/$(cat /etc/hostname)/$(echo ${statedir:1} | tr "/" "-")"
+
+    if [ ! "$(ls -A "${statedir_target}")" ]; then
+      echo -e "\tInitializing ${statedir_target} ..."
+      if [ -d "${statedir}" ]; then
+        mv "${statedir}" "${statedir_target}"
+      else
+        mkdir -p "${statedir_target}"
+      fi
     fi
+
+    echo -e "\tLinking ${statedir} to ${statedir_target}"
+    rm -rf "${statedir}"
+    ln -s "${statedir_target}" "${statedir}"
   done
 
   if [ -s "$GLUSTERFS_CUSTOM_FSTAB" ]; then

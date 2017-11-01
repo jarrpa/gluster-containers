@@ -26,9 +26,6 @@ RUN dnf --setopt=tsflags=nodocs -y upgrade && \
     dnf --setopt=tsflags=nodocs -y install 'dnf-command(copr)' && dnf -y copr enable jarrpa/gluster-block && \
     dnf --setopt=tsflags=nodocs -y install gluster-block targetcli target-restore dbus-python glusterfs glusterfs-server glusterfs-geo-replication procps-ng xfsprogs && \
     dnf clean all && \
-    mkdir -p /etc/glusterfs_bkp /var/lib/glusterd_bkp /var/log/glusterfs_bkp && \
-    cp -r /etc/glusterfs/* /etc/glusterfs_bkp && \
-    cp -r /var/lib/glusterd/* /var/lib/glusterd_bkp && \
     sed -i.save -e "s#udev_sync = 1#udev_sync = 0#" -e "s#udev_rules = 1#udev_rules = 0#" -e "s#use_lvmetad = 1#use_lvmetad = 0#" /etc/lvm/lvm.conf && \
     mv /gluster-setup.sh /usr/sbin/gluster-setup.sh && mv /systemctl-mock.sh /bin/systemctl && \
     chmod 500 /usr/sbin/gluster-setup.sh && chmod 655 /bin/systemctl
