@@ -29,11 +29,14 @@ COPY gluster-setup.sh gluster-brickmultiplex.service gluster-brickmultiplex.sh g
 
 RUN dnf -y update && \
     sed -i "s/LANG/\#LANG/g" /etc/locale.conf && \
-    dnf -y install systemd-udev ntp glusterfs-server dbus-python nfs-utils attr iputils iproute glusterfs-geo-replication openssh-server openssh-clients cronie tar rsync sos sudo xfsprogs && \
+    sed -i -e '/\[updates-testing\]/,/^\[/ s/enabled=0/enabled=1/' /etc/yum.repos.d/fedora-updates-testing.repo && \
+    dnf --setopt=tsflags=nodocs -y install 'dnf-command(copr)' && dnf -y copr enable jarrpa/gluster-block && \
+    dnf -y install systemd-udev ntp glusterfs-server gluster-block target-restore dbus-python nfs-utils attr iputils iproute glusterfs-geo-replication openssh-server openssh-clients cronie tar rsync sos sudo xfsprogs procps-ng && \
     dnf clean all && \
     sed -i '/Port 22/c\Port 2222' /etc/ssh/sshd_config && \
     sed -i 's/Requires\=rpcbind\.service//g' /usr/lib/systemd/system/glusterd.service && \
     sed -i 's/rpcbind\.service/gluster-setup\.service/g' /usr/lib/systemd/system/glusterd.service && \
+    sed -i 's/rpcbind\.service//g' /usr/lib/systemd/system/gluster-blockd.service && \
     sed -i.save -e "s#udev_sync = 1#udev_sync = 0#" -e "s#udev_rules = 1#udev_rules = 0#" -e "s#use_lvmetad = 1#use_lvmetad = 0#" /etc/lvm/lvm.conf && \
     # Back up the default/base configuration. The target directories get
     # overwritten with the directories from the host which are initially
@@ -59,6 +62,8 @@ RUN dnf -y update && \
     systemctl enable sshd.service && \
     systemctl enable ntpd.service && \
     systemctl enable gluster-setup.service && \
+    systemctl enable gluster-block-target.service && \
+    systemctl enable gluster-blockd.service && \
     systemctl enable gluster-brickmultiplex.service && \
     systemctl enable glusterd.service
 
