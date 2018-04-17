@@ -1,4 +1,4 @@
-FROM fedora
+FROM registry.fedoraproject.org/fedora-minimal:latest
 
 ENV NAME="gluster-fedora-minimal" \
     DESC="GlusterFS on Fedora w/o systemd" \
@@ -22,10 +22,11 @@ LABEL name="$REPO/$NAME" \
 
 COPY gluster-setup.sh systemctl-mock.sh /
 
-RUN dnf --setopt=tsflags=nodocs -y upgrade && \
-    dnf --setopt=tsflags=nodocs -y install 'dnf-command(copr)' && dnf -y copr enable jarrpa/gluster-block && \
-    dnf --setopt=tsflags=nodocs -y install gluster-block targetcli target-restore dbus-python glusterfs glusterfs-server glusterfs-geo-replication procps-ng xfsprogs && \
-    dnf clean all && \
+RUN microdnf --setopt=tsflags=nodocs -y update && \
+    #microdnf --setopt=tsflags=nodocs -y install 'dnf-command(copr)' && microdnf -y copr enable jarrpa/gluster-block && \
+    #microdnf --setopt=tsflags=nodocs -y install gluster-block targetcli target-restore dbus-python glusterfs glusterfs-server glusterfs-geo-replication procps-ng xfsprogs && \
+    microdnf --setopt=tsflags=nodocs -y install dbus-python glusterfs glusterfs-server glusterfs-geo-replication procps-ng xfsprogs && \
+    microdnf clean all && \
     sed -i.save -e "s#udev_sync = 1#udev_sync = 0#" -e "s#udev_rules = 1#udev_rules = 0#" -e "s#use_lvmetad = 1#use_lvmetad = 0#" /etc/lvm/lvm.conf && \
     mv /gluster-setup.sh /usr/sbin/gluster-setup.sh && mv /systemctl-mock.sh /bin/systemctl && \
     chmod 500 /usr/sbin/gluster-setup.sh && chmod 655 /bin/systemctl
