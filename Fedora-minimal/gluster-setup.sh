@@ -18,6 +18,7 @@ GLUSTERFS_META_DIR="/var/lib/glusterd"
 GLUSTERFS_LOG_CONT_DIR="${GLUSTERFS_LOG_DIR}/container"
 GLUSTERFS_CUSTOM_FSTAB="/var/lib/heketi/fstab"
 
+: "${GLUSTERFS_NODE_NAME:=$(cat /etc/hostname)}"
 : "${GLUSTER_BRICKMULTIPLEX:=yes}"
 : "${GLUSTERFS_LOG_LEVEL:=INFO}"
 : "${GB_LOGDIR:="${GLUSTERFS_LOG_DIR}/gluster-block"}"
@@ -30,7 +31,7 @@ setup() {
 
   statedirs=( "/var/lib/heketi" "/etc/glusterfs" "/var/lib/glusterd" "/var/lib/misc/glusterfsd" "/etc/target" )
   for statedir in "${statedirs[@]}"; do
-    statedir_target="/glusterfs/$(cat /etc/hostname)/$(echo ${statedir:1} | tr "/" "-")"
+    statedir_target="/glusterfs/${GLUSTERFS_NODE_NAME}/$(echo ${statedir:1} | tr "/" "-")"
 
     if [ ! "$(ls -A "${statedir_target}")" ]; then
       echo -e "\tInitializing ${statedir_target} ..."
